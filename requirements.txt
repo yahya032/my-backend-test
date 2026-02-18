@@ -5,6 +5,7 @@ django-cors-headers==4.7.0
 django-filter==25.1
 dj-database-url==3.0.1
 whitenoise==6.9.0
+gunicorn==25.1.0  # serveur WSGI pour production
 
 # Base de données
 psycopg2-binary==2.9.11
@@ -26,7 +27,7 @@ xlrd==2.0.2
 et_xmlfile==2.0.0
 pillow==11.2.1
 
-# Utils
+# Utils / HTTP
 certifi==2025.4.26
 charset-normalizer==3.4.4
 idna==3.11
