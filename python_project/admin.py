@@ -1,10 +1,11 @@
-from django.contrib.admin import AdminSite
+# python_project/admin.py
+from django.contrib import admin
 from django.urls import path
 from django.template.response import TemplateResponse
 from .models import Alert, Document, University, Speciality, Level, Semester, Matiere
 
 
-class SupNumAdminSite(AdminSite):
+class SupNumAdminSite(admin.AdminSite):
     site_header = "Administration SupNum"
     site_title = "SupNum Admin"
     index_title = "Tableau de bord"
@@ -40,7 +41,6 @@ class SupNumAdminSite(AdminSite):
 
 admin_site = SupNumAdminSite(name="supnum_admin")
 
-# Enregistrement des modèles
 admin_site.register(Alert)
 admin_site.register(Document)
 admin_site.register(University)

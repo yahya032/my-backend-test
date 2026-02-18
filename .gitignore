@@ -1,25 +1,40 @@
-# Fichiers Python
-__pycache__/
+# Django
+*.log
+*.pot
 *.pyc
-*.pyo
-*.pyd
-*.sqlite3
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
 
-# Environnements virtuels
-.venv/
+# Environment
+.env
 venv/
-
-# Fichiers sensibles
-serviceAccountKey.json
+env/
+ENV/
+env.bak/
+venv.bak/
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# Testing
+scripts_test/
+coverage/
+*.coverage
+.pytest_cache/
+
+# Firebase (ne pas commiter la clé)
+serviceAccountKey.json
+*.key
+*.pem
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Pytest / coverage
-.coverage
-htmlcov/

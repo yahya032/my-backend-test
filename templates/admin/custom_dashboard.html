@@ -1,0 +1,45 @@
+<!-- templates/admin/custom_dashboard.html -->
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1>Tableau de bord SupNum</h1>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Alertes</h3>
+            <p style="font-size: 2em; color: #007bff;">{{ total_alerts }}</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Documents</h3>
+            <p style="font-size: 2em; color: #28a745;">{{ total_documents }}</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Universités</h3>
+            <p style="font-size: 2em; color: #17a2b8;">{{ total_universities }}</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Spécialités</h3>
+            <p style="font-size: 2em; color: #ffc107;">{{ total_specialities }}</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Niveaux</h3>
+            <p style="font-size: 2em; color: #dc3545;">{{ total_levels }}</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Semestres</h3>
+            <p style="font-size: 2em; color: #6f42c1;">{{ total_semesters }}</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>Matières</h3>
+            <p style="font-size: 2em; color: #fd7e14;">{{ total_matieres }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -159,37 +159,150 @@ class DocumentViewSet(BaseViewSet):
         )
 
 
-# ---------------- FIREBASE ----------------
+# ================ FIREBASE FUNCTIONS ================
+
 @api_view(['GET'])
 def list_firebase_users(request):
+    """
+    Liste tous les utilisateurs Firebase (max 100 par défaut)
+    """
     try:
-        users = [{"uid": u.uid, "email": u.email, "disabled": u.disabled}
-                 for u in firebase_auth.list_users().iterate_all()]
+        # Récupérer la liste des utilisateurs
+        users = []
+        page = firebase_auth.list_users()
+        
+        for user in page.iterate_all():
+            users.append({
+                'uid': user.uid,
+                'email': user.email,
+                'display_name': user.display_name,
+                'disabled': user.disabled,
+                'created_at': user.user_metadata.creation_timestamp if user.user_metadata else None
+            })
+        
         serializer = FirebaseUserSerializer(users, many=True)
-        return Response({"users": serializer.data})
+        return Response(serializer.data)
+        
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['POST'])
 def create_firebase_user(request):
+    """
+    Crée un nouvel utilisateur Firebase
+    """
     serializer = FirebaseCreateUserSerializer(data=request.data)
+    
     if serializer.is_valid():
-        data = serializer.validated_data
         try:
+            # Créer l'utilisateur dans Firebase
             user = firebase_auth.create_user(
-                email=data['email'],
-                password=data['password'],
-                display_name=data.get('display_name', ''),
-                disabled=data.get('disabled', False)
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password'],
+                display_name=serializer.validated_data.get('display_name', ''),
+                disabled=serializer.validated_data.get('disabled', False)
             )
+            
             return Response({
-                "uid": user.uid,
-                "email": user.email,
-                "display_name": user.display_name,
-                "disabled": user.disabled
+                'uid': user.uid,
+                'email': user.email,
+                'display_name': user.display_name,
+                'message': 'Utilisateur créé avec succès'
             }, status=status.HTTP_201_CREATED)
+            
+        except firebase_auth.EmailAlreadyExistsError:
+            return Response(
+                {"error": "Un utilisateur avec cet email existe déjà"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_firebase_user(request, uid):
+    """
+    Récupère les détails d'un utilisateur Firebase spécifique
+    """
+    try:
+        user = firebase_auth.get_user(uid)
+        
+        return Response({
+            'uid': user.uid,
+            'email': user.email,
+            'display_name': user.display_name,
+            'disabled': user.disabled,
+            'created_at': user.user_metadata.creation_timestamp if user.user_metadata else None,
+            'last_sign_in': user.user_metadata.last_sign_in_timestamp if user.user_metadata else None
+        })
+        
+    except firebase_auth.UserNotFoundError:
+        return Response(
+            {"error": "Utilisateur non trouvé"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['DELETE'])
+def delete_firebase_user(request, uid):
+    """
+    Supprime un utilisateur Firebase par son UID
+    """
+    try:
+        firebase_auth.delete_user(uid)
+        return Response(
+            {"message": f"Utilisateur {uid} supprimé avec succès"},
+            status=status.HTTP_200_OK
+        )
+    except firebase_auth.UserNotFoundError:
+        return Response(
+            {"error": "Utilisateur non trouvé"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+def disable_firebase_user(request, uid):
+    """
+    Désactive ou active un utilisateur Firebase
+    """
+    try:
+        disabled = request.data.get('disabled', True)
+        user = firebase_auth.update_user(uid, disabled=disabled)
+        
+        return Response({
+            'uid': user.uid,
+            'email': user.email,
+            'disabled': user.disabled,
+            'message': f"Utilisateur {'désactivé' if disabled else 'activé'} avec succès"
+        })
+        
+    except firebase_auth.UserNotFoundError:
+        return Response(
+            {"error": "Utilisateur non trouvé"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
