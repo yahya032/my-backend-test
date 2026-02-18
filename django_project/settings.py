@@ -9,13 +9,14 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-this-in-production"
 # DEBUG : utiliser variable d'environnement pour la prod
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
-# ALLOWED_HOSTS : inclure ton domaine Render et localhost
+# ================== ALLOWED HOSTS ==================
+# Inclure ton domaine Render et localhost
 ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
     "my-backend-test-1o0j.onrender.com,localhost,127.0.0.1"
 ).split(",")
 
-# CSRF trusted origins
+# ================== CSRF ==================
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
     "https://my-backend-test-1o0j.onrender.com"
