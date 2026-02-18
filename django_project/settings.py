@@ -5,8 +5,21 @@ import dj_database_url
 # ================== BASE ==================
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-this-in-production")
-DEBUG = True
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "my-backend-app-m2iq.onrender.com").split(",")
+
+# DEBUG : utiliser variable d'environnement pour la prod
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
+
+# ALLOWED_HOSTS : inclure ton domaine Render et localhost
+ALLOWED_HOSTS = os.getenv(
+    "ALLOWED_HOSTS",
+    "my-backend-test-1o0j.onrender.com,localhost,127.0.0.1"
+).split(",")
+
+# CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "CSRF_TRUSTED_ORIGINS",
+    "https://my-backend-test-1o0j.onrender.com"
+).split(",")
 
 # ================== APPLICATIONS ==================
 INSTALLED_APPS = [
@@ -59,7 +72,10 @@ TEMPLATES = [
 # ================== DATABASE ==================
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        default=os.getenv(
+            "DATABASE_URL",
+            f"sqlite:///{BASE_DIR / 'db.sqlite3'}"  # fallback SQLite pour dev
+        ),
         conn_max_age=600,
     )
 }
@@ -84,16 +100,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ================== MEDIA ==================
-# Sur Render, point directement vers le dossier media
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/opt/render/project/src/media")  # chemin exact sur Render
+MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/opt/render/project/src/media")
 
 # ================== CORS ==================
 CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
-    "https://my-backend-app-m2iq.onrender.com"
-).split(",")
 
 # ================== DEFAULT ==================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
