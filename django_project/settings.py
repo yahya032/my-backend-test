@@ -4,23 +4,31 @@ import dj_database_url
 
 # ================== BASE ==================
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-this-in-production")
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", 
+    "django-insecure-change-this-in-production"
+)
 
 # DEBUG : utiliser variable d'environnement pour la prod
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
 # ================== ALLOWED HOSTS ==================
-# Inclure ton domaine Render et localhost
+# Récupérer automatiquement le hostname Render si disponible
+RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
 ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
-    "my-backend-test-1o0j.onrender.com,localhost,127.0.0.1"
+    f"{RENDER_EXTERNAL_HOSTNAME},localhost,127.0.0.1" if RENDER_EXTERNAL_HOSTNAME else "localhost,127.0.0.1"
 ).split(",")
+# Supprimer les entrées vides
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
 
 # ================== CSRF ==================
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
-    "https://my-backend-test-1o0j.onrender.com"
+    f"https://{RENDER_EXTERNAL_HOSTNAME}" if RENDER_EXTERNAL_HOSTNAME else ""
 ).split(",")
+# Supprimer les entrées vides
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS if origin.strip()]
 
 # ================== APPLICATIONS ==================
 INSTALLED_APPS = [
@@ -33,7 +41,7 @@ INSTALLED_APPS = [
 
     "rest_framework",
     "corsheaders",
-    "python_project",  # ton app
+    "python_project",  # ton app principale
 ]
 
 # ================== MIDDLEWARE ==================
@@ -75,7 +83,7 @@ DATABASES = {
     "default": dj_database_url.config(
         default=os.getenv(
             "DATABASE_URL",
-            f"sqlite:///{BASE_DIR / 'db.sqlite3'}"  # fallback SQLite pour dev
+            f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
         ),
         conn_max_age=600,
     )
@@ -102,7 +110,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ================== MEDIA ==================
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/opt/render/project/src/media")
+MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", BASE_DIR / "media"))
 
 # ================== CORS ==================
 CORS_ALLOW_ALL_ORIGINS = True
