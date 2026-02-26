@@ -5,29 +5,28 @@ django-cors-headers==4.7.0
 django-filter==25.1
 dj-database-url==3.0.1
 whitenoise==6.9.0
-gunicorn==25.1.0  # serveur WSGI pour production
+gunicorn==25.1.0
 
 # Base de données
 psycopg2-binary==2.9.11
 
-# Requests & Auth
-requests==2.32.5
+# Variables d'environnement
 python-dotenv==1.2.1
+
+# Firebase & Auth
+firebase_admin==7.1.0
 PyJWT==2.10.1
 cryptography==46.0.3
-firebase_admin==7.1.0
+
+# Google Cloud (dépendances Firebase)
 google-api-core==2.29.0
 google-auth==2.47.0
 google-cloud-firestore==2.23.0
 google-cloud-storage==3.8.0
 
-# Excel / fichiers
-openpyxl==3.1.5
-xlrd==2.0.2
-et_xmlfile==2.0.0
+# Fichiers & Utils
 pillow==11.2.1
-
-# Utils / HTTP
+requests==2.32.5
 certifi==2025.4.26
 charset-normalizer==3.4.4
 idna==3.11

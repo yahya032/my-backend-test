@@ -8,8 +8,8 @@ urlpatterns = [
     # Admin par défaut de Django
     path('django-admin/', admin.site.urls),
     
-    # Inclusion de toutes les URLs de l'application
-    path('', include('python_project.urls')),
+    # Inclusion des URLs de l'application avec le préfixe 'api/'
+    path('api/', include('python_project.urls')),  # ← AJOUT du préfixe api/ ici
 ]
 
 if settings.DEBUG:

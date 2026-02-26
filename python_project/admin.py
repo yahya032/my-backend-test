@@ -1,50 +1,47 @@
-# python_project/admin.py
+# admin.py
 from django.contrib import admin
-from django.urls import path
-from django.template.response import TemplateResponse
-from .models import Alert, Document, University, Speciality, Level, Semester, Matiere
+from .models import *
 
+@admin.register(University)
+class UniversityAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'created_at']
+    search_fields = ['name']
 
-class SupNumAdminSite(admin.AdminSite):
-    site_header = "Administration SupNum"
-    site_title = "SupNum Admin"
-    index_title = "Tableau de bord"
+@admin.register(Speciality)
+class SpecialityAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'university', 'code']
+    list_filter = ['university']
+    search_fields = ['name', 'code']
 
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path(
-                "dashboard/",
-                self.admin_view(self.dashboard_view),
-                name="dashboard",
-            ),
-        ]
-        return custom_urls + urls
+@admin.register(Level)
+class LevelAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'speciality', 'order']
+    list_filter = ['speciality']
+    search_fields = ['name']
 
-    def dashboard_view(self, request):
-        context = dict(
-            self.each_context(request),
-            total_alerts=Alert.objects.count(),
-            total_documents=Document.objects.count(),
-            total_universities=University.objects.count(),
-            total_specialities=Speciality.objects.count(),
-            total_levels=Level.objects.count(),
-            total_semesters=Semester.objects.count(),
-            total_matieres=Matiere.objects.count(),
-        )
-        return TemplateResponse(
-            request,
-            "admin/custom_dashboard.html",
-            context,
-        )
+@admin.register(Semester)
+class SemesterAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'code', 'level', 'order']
+    list_filter = ['level']
 
+@admin.register(Matiere)
+class MatiereAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'semester', 'code', 'credits']
+    list_filter = ['semester__level__speciality']
+    search_fields = ['name']
 
-admin_site = SupNumAdminSite(name="supnum_admin")
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title', 'matiere', 'file_type', 'download_count', 'created_at']
+    list_filter = ['file_type', 'matiere__semester__level__speciality']
+    search_fields = ['title']
 
-admin_site.register(Alert)
-admin_site.register(Document)
-admin_site.register(University)
-admin_site.register(Speciality)
-admin_site.register(Level)
-admin_site.register(Semester)
-admin_site.register(Matiere)
+@admin.register(Alert)
+class AlertAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title', 'priority', 'is_global', 'created_at']
+    list_filter = ['priority', 'is_global']
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user_id', 'first_name', 'last_name', 'email', 'university']
+    search_fields = ['first_name', 'last_name', 'email']

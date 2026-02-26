@@ -1,308 +1,283 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import api_view, action
+# views.py
+from rest_framework import viewsets, status, filters
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.http import FileResponse
-from django.db.models import Q
-import os
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.db.models import Q, Count
+from django.utils import timezone
+from .models import *
+from .serializers import *
+import logging
 
-from .models import University, Speciality, Level, Semester, Matiere, Document, Alert
-from .serializers import (
-    UniversitySerializer, SpecialitySerializer, LevelSerializer,
-    SemesterSerializer, MatiereSerializer, DocumentSerializer,
-    FirebaseUserSerializer, FirebaseCreateUserSerializer, AlertSerializer
-)
-from firebase_admin import auth as firebase_auth
+logger = logging.getLogger(__name__)
 
 
-# ---------------- ALERT ----------------
-@api_view(['GET'])
-def user_alerts(request):
-    user_id = request.query_params.get('user')
-    if not user_id:
-        return Response({"error": "user parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-    alerts = Alert.objects.filter(user_id=user_id).order_by('-created_at')
-    serializer = AlertSerializer(alerts, many=True)
-    return Response(serializer.data)
-
-
-# ---------------- BASE VIEWSET ----------------
-class BaseViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.AllowAny]
-
-    def get_serializer_context(self):
-        return {'request': self.request}
-
-
-# ---------------- UNIVERSITY ----------------
-class UniversityViewSet(BaseViewSet):
-    queryset = University.objects.all()
+class UniversityViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet pour les universités (lecture seule)"""
+    queryset = University.objects.all().order_by('name')
     serializer_class = UniversitySerializer
-
-    @action(detail=True, methods=['get'], url_path='download-calendar')
-    def download_calendar(self, request, pk=None):
-        university = self.get_object()
-
-        # Si le fichier calendar est défini
-        if university.calendar and university.calendar.name:
-            file_path = university.calendar.path
-            if os.path.exists(file_path):
-                return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
-
-        # fallback: chercher un document PDF nommé "calendrier"
-        calendar_doc = Document.objects.filter(
-            matiere__speciality__university=university,
-            file__endswith='.pdf',
-            title__icontains='calendrier'
-        ).first()
-
-        if calendar_doc and calendar_doc.file:
-            return FileResponse(calendar_doc.file.open(), content_type='application/pdf')
-
-        return Response({"error": "Calendrier non trouvé."}, status=status.HTTP_404_NOT_FOUND)
-
-    @action(detail=True, methods=['get'], url_path='calendar-url')
-    def calendar_url(self, request, pk=None):
-        university = self.get_object()
-        if university.calendar and university.calendar.name:
-            return Response({"url": request.build_absolute_uri(university.calendar.url)})
-        return Response({"url": None, "error": "Calendrier non trouvé."}, status=status.HTTP_404_NOT_FOUND)
+    permission_classes = [AllowAny]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
 
-# ---------------- SPECIALITY ----------------
-class SpecialityViewSet(BaseViewSet):
-    queryset = Speciality.objects.all()
+class SpecialityViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet pour les spécialités"""
     serializer_class = SpecialitySerializer
-
+    permission_classes = [AllowAny]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'code']
+    
     def get_queryset(self):
-        qs = super().get_queryset()
+        queryset = Speciality.objects.all().order_by('name')
         university_id = self.request.query_params.get('university_id')
         if university_id:
-            qs = qs.filter(university_id=university_id)
-        return qs.order_by('id')
+            queryset = queryset.filter(university_id=university_id)
+        return queryset
 
 
-# ---------------- LEVEL ----------------
-class LevelViewSet(BaseViewSet):
-    queryset = Level.objects.all()
+class LevelViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet pour les niveaux"""
     serializer_class = LevelSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = Level.objects.all().order_by('order', 'name')
+        speciality_id = self.request.query_params.get('speciality_id')
+        if speciality_id:
+            queryset = queryset.filter(speciality_id=speciality_id)
+        return queryset
 
 
-# ---------------- SEMESTER ----------------
-class SemesterViewSet(BaseViewSet):
-    queryset = Semester.objects.all()
+class SemesterViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet pour les semestres"""
     serializer_class = SemesterSerializer
-
+    permission_classes = [AllowAny]
+    
     def get_queryset(self):
-        qs = super().get_queryset()
+        queryset = Semester.objects.all().order_by('order')
         level_id = self.request.query_params.get('level_id')
         if level_id:
-            qs = qs.filter(level_id=level_id)
-        return qs.order_by('id')
+            queryset = queryset.filter(level_id=level_id)
+        return queryset
 
 
-# ---------------- MATIERE ----------------
-class MatiereViewSet(BaseViewSet):
-    queryset = Matiere.objects.all()
+class MatiereViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet pour les matières"""
     serializer_class = MatiereSerializer
-
+    permission_classes = [AllowAny]
+    
     def get_queryset(self):
-        qs = super().get_queryset()
-        level_id = self.request.query_params.get('level_id')
+        queryset = Matiere.objects.all().order_by('name')
+        
+        # Filtres multiples
+        university_id = self.request.query_params.get('university_id')
         semester_id = self.request.query_params.get('semester_id')
         speciality_id = self.request.query_params.get('speciality_id')
-        university_id = self.request.query_params.get('university_id')
-
-        if level_id:
-            qs = qs.filter(Q(semester__level_id=level_id) | Q(semester__level__isnull=True))
-        if semester_id:
-            qs = qs.filter(Q(semester_id=semester_id) | Q(semester__isnull=True))
-        if speciality_id:
-            qs = qs.filter(Q(speciality_id=speciality_id) | Q(speciality__isnull=True))
+        level_id = self.request.query_params.get('level_id')
+        
         if university_id:
-            qs = qs.filter(Q(speciality__university_id=university_id) | Q(speciality__university__isnull=True))
+            queryset = queryset.filter(semester__level__speciality__university_id=university_id)
+        if semester_id:
+            queryset = queryset.filter(semester_id=semester_id)
+        if speciality_id:
+            queryset = queryset.filter(semester__level__speciality_id=speciality_id)
+        if level_id:
+            queryset = queryset.filter(semester__level_id=level_id)
+            
+        return queryset
 
-        return qs.order_by('semester__level__id', 'semester__id', 'id')
 
-
-# ---------------- DOCUMENT ----------------
-class DocumentViewSet(BaseViewSet):
-    queryset = Document.objects.all()
+class DocumentViewSet(viewsets.ModelViewSet):
+    """ViewSet pour les documents"""
     serializer_class = DocumentSerializer
-
+    permission_classes = [AllowAny]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'description']
+    
     def get_queryset(self):
-        qs = super().get_queryset()
+        queryset = Document.objects.filter(is_published=True).order_by('-created_at')
+        
+        # Filtres
+        university_id = self.request.query_params.get('university_id')
+        speciality_id = self.request.query_params.get('speciality_id')
         level_id = self.request.query_params.get('level_id')
         semester_id = self.request.query_params.get('semester_id')
-        speciality_id = self.request.query_params.get('speciality_id')
-        university_id = self.request.query_params.get('university_id')
         matiere_id = self.request.query_params.get('matiere_id')
-
-        if matiere_id:
-            qs = qs.filter(matiere_id=matiere_id)
-        if semester_id:
-            qs = qs.filter(Q(matiere__semester_id=semester_id) | Q(matiere__semester__isnull=True))
-        if level_id:
-            qs = qs.filter(Q(matiere__semester__level_id=level_id) | Q(matiere__semester__level__isnull=True))
-        if speciality_id:
-            qs = qs.filter(Q(matiere__speciality_id=speciality_id) | Q(matiere__speciality__isnull=True))
+        
         if university_id:
-            qs = qs.filter(Q(matiere__speciality__university_id=university_id) | Q(matiere__speciality__university__isnull=True))
-
-        return qs.order_by(
-            'matiere__speciality__university__id',
-            'matiere__speciality__id',
-            'matiere__semester__level_id',
-            'matiere__semester_id',
-            'matiere_id',
-            'id'
-        )
-
-
-# ================ FIREBASE FUNCTIONS ================
-
-@api_view(['GET'])
-def list_firebase_users(request):
-    """
-    Liste tous les utilisateurs Firebase (max 100 par défaut)
-    """
-    try:
-        # Récupérer la liste des utilisateurs
-        users = []
-        page = firebase_auth.list_users()
-        
-        for user in page.iterate_all():
-            users.append({
-                'uid': user.uid,
-                'email': user.email,
-                'display_name': user.display_name,
-                'disabled': user.disabled,
-                'created_at': user.user_metadata.creation_timestamp if user.user_metadata else None
-            })
-        
-        serializer = FirebaseUserSerializer(users, many=True)
-        return Response(serializer.data)
-        
-    except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-@api_view(['POST'])
-def create_firebase_user(request):
-    """
-    Crée un nouvel utilisateur Firebase
-    """
-    serializer = FirebaseCreateUserSerializer(data=request.data)
+            queryset = queryset.filter(
+                matiere__semester__level__speciality__university_id=university_id
+            )
+        if speciality_id:
+            queryset = queryset.filter(
+                matiere__semester__level__speciality_id=speciality_id
+            )
+        if level_id:
+            queryset = queryset.filter(matiere__semester__level_id=level_id)
+        if semester_id:
+            queryset = queryset.filter(matiere__semester_id=semester_id)
+        if matiere_id:
+            queryset = queryset.filter(matiere_id=matiere_id)
+            
+        return queryset
     
-    if serializer.is_valid():
+    @action(detail=True, methods=['post'])
+    def increment_download(self, request, pk=None):
+        """Incrémente le compteur de téléchargements"""
+        document = self.get_object()
+        document.download_count += 1
+        document.save()
+        return Response({'download_count': document.download_count})
+
+
+class AlertViewSet(viewsets.ModelViewSet):
+    """ViewSet pour les alertes"""
+    serializer_class = AlertSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = Alert.objects.all().order_by('-created_at')
+        user_id = self.request.query_params.get('user')
+        
+        if user_id:
+            # Alertes globales OU pour cet utilisateur spécifique
+            queryset = queryset.filter(
+                Q(is_global=True) | Q(user_id=user_id)
+            ).filter(
+                Q(expires_at__isnull=True) | Q(expires_at__gte=timezone.now())
+            )
+            
+            # Ajouter le statut de lecture
+            for alert in queryset:
+                try:
+                    read_status = AlertReadStatus.objects.get(
+                        alert=alert, user_id=user_id
+                    )
+                    alert.is_read = read_status.is_read
+                except AlertReadStatus.DoesNotExist:
+                    alert.is_read = False
+                    
+        return queryset
+    
+    @action(detail=False, methods=['get'], url_path='stats')
+    def get_stats(self, request):
+        """Récupère les statistiques des alertes pour un utilisateur"""
+        user_id = request.query_params.get('user')
+        if not user_id:
+            return Response({'error': 'user_id required'}, status=400)
+            
+        alerts = self.get_queryset()
+        
+        # Compter par type (simulé via le titre)
+        universities_count = alerts.filter(title__icontains='🏛️').count()
+        specialities_count = alerts.filter(title__icontains='🎓').count()
+        others_count = alerts.exclude(
+            Q(title__icontains='🏛️') | Q(title__icontains='🎓')
+        ).count()
+        
+        # Compter les lus/non lus
+        read_count = sum(1 for a in alerts if getattr(a, 'is_read', False))
+        unread_count = alerts.count() - read_count
+        
+        return Response({
+            'total': alerts.count(),
+            'read': read_count,
+            'unread': unread_count,
+            'universities': universities_count,
+            'specialities': specialities_count,
+            'others': others_count,
+        })
+    
+    @action(detail=True, methods=['patch'])
+    def mark_as_read(self, request, pk=None):
+        """Marque une alerte comme lue"""
+        alert = self.get_object()
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
+            return Response({'error': 'user_id required'}, status=400)
+            
+        read_status, created = AlertReadStatus.objects.get_or_create(
+            alert=alert,
+            user_id=user_id,
+            defaults={'is_read': True, 'read_at': timezone.now()}
+        )
+        
+        if not created and not read_status.is_read:
+            read_status.is_read = True
+            read_status.read_at = timezone.now()
+            read_status.save()
+            
+        return Response({'status': 'marked as read'})
+
+
+class FavoriteDocumentViewSet(viewsets.ModelViewSet):
+    """ViewSet pour les documents favoris"""
+    serializer_class = FavoriteDocumentSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = FavoriteDocument.objects.all().order_by('-created_at')
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+        return queryset
+    
+    @action(detail=False, methods=['delete'], url_path='remove')
+    def remove_favorite(self, request):
+        """Supprime un favori"""
+        user_id = request.query_params.get('user_id')
+        document_id = request.query_params.get('document_id')
+        
+        if not user_id or not document_id:
+            return Response({'error': 'user_id and document_id required'}, status=400)
+            
+        deleted = FavoriteDocument.objects.filter(
+            user_id=user_id,
+            document_id=document_id
+        ).delete()
+        
+        return Response({'deleted': deleted[0] > 0})
+
+
+class UserProfileViewSet(viewsets.ModelViewSet):
+    """ViewSet pour les profils utilisateur"""
+    serializer_class = UserProfileSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = UserProfile.objects.all()
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+        return queryset
+    
+    @action(detail=False, methods=['get'], url_path='by-firebase-id')
+    def get_by_firebase_id(self, request):
+        """Récupère un profil par Firebase ID"""
+        user_id = request.query_params.get('firebase_id')
+        if not user_id:
+            return Response({'error': 'firebase_id required'}, status=400)
+            
         try:
-            # Créer l'utilisateur dans Firebase
-            user = firebase_auth.create_user(
-                email=serializer.validated_data['email'],
-                password=serializer.validated_data['password'],
-                display_name=serializer.validated_data.get('display_name', ''),
-                disabled=serializer.validated_data.get('disabled', False)
-            )
-            
-            return Response({
-                'uid': user.uid,
-                'email': user.email,
-                'display_name': user.display_name,
-                'message': 'Utilisateur créé avec succès'
-            }, status=status.HTTP_201_CREATED)
-            
-        except firebase_auth.EmailAlreadyExistsError:
-            return Response(
-                {"error": "Un utilisateur avec cet email existe déjà"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            profile = UserProfile.objects.get(user_id=user_id)
+            serializer = self.get_serializer(profile)
+            return Response(serializer.data)
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'Profile not found'}, status=404)
     
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET'])
-def get_firebase_user(request, uid):
-    """
-    Récupère les détails d'un utilisateur Firebase spécifique
-    """
-    try:
-        user = firebase_auth.get_user(uid)
+    @action(detail=False, methods=['post'], url_path='create-or-update')
+    def create_or_update(self, request):
+        """Crée ou met à jour un profil"""
+        user_id = request.data.get('user_id')
+        if not user_id:
+            return Response({'error': 'user_id required'}, status=400)
+            
+        profile, created = UserProfile.objects.update_or_create(
+            user_id=user_id,
+            defaults=request.data
+        )
         
-        return Response({
-            'uid': user.uid,
-            'email': user.email,
-            'display_name': user.display_name,
-            'disabled': user.disabled,
-            'created_at': user.user_metadata.creation_timestamp if user.user_metadata else None,
-            'last_sign_in': user.user_metadata.last_sign_in_timestamp if user.user_metadata else None
-        })
-        
-    except firebase_auth.UserNotFoundError:
-        return Response(
-            {"error": "Utilisateur non trouvé"},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-@api_view(['DELETE'])
-def delete_firebase_user(request, uid):
-    """
-    Supprime un utilisateur Firebase par son UID
-    """
-    try:
-        firebase_auth.delete_user(uid)
-        return Response(
-            {"message": f"Utilisateur {uid} supprimé avec succès"},
-            status=status.HTTP_200_OK
-        )
-    except firebase_auth.UserNotFoundError:
-        return Response(
-            {"error": "Utilisateur non trouvé"},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-@api_view(['POST'])
-def disable_firebase_user(request, uid):
-    """
-    Désactive ou active un utilisateur Firebase
-    """
-    try:
-        disabled = request.data.get('disabled', True)
-        user = firebase_auth.update_user(uid, disabled=disabled)
-        
-        return Response({
-            'uid': user.uid,
-            'email': user.email,
-            'disabled': user.disabled,
-            'message': f"Utilisateur {'désactivé' if disabled else 'activé'} avec succès"
-        })
-        
-    except firebase_auth.UserNotFoundError:
-        return Response(
-            {"error": "Utilisateur non trouvé"},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        serializer = self.get_serializer(profile)
+        return Response(serializer.data, status=201 if created else 200)
