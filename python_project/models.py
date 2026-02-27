@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils import timezone  # IMPORTANT: Gardez cette ligne en haut
+from django.utils import timezone
 
 class University(models.Model):
     """Modèle pour les universités"""
@@ -158,7 +158,7 @@ class Document(models.Model):
 
 class FavoriteDocument(models.Model):
     """Modèle pour les documents favoris des utilisateurs"""
-    user_id = models.CharField(max_length=255, verbose_name="ID Firebase User")
+    user_id = models.CharField(max_length=255, verbose_name="ID Firebase User", db_index=True)
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='favorites')
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Date de création")
     
@@ -166,7 +166,9 @@ class FavoriteDocument(models.Model):
         verbose_name = "Document favori"
         verbose_name_plural = "Documents favoris"
         unique_together = ['user_id', 'document']
-        indexes = [models.Index(fields=['user_id', '-created_at'])]
+        indexes = [
+            models.Index(fields=['user_id', '-created_at']),
+        ]
     
     def __str__(self):
         return f"{self.user_id} - {self.document.title}"
@@ -185,7 +187,7 @@ class Alert(models.Model):
     message = models.TextField(verbose_name="Message")
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     is_global = models.BooleanField(default=False, verbose_name="Alerte globale")
-    user_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID Utilisateur cible")
+    user_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID Utilisateur cible", db_index=True)
     university = models.ForeignKey(University, on_delete=models.CASCADE, blank=True, null=True, related_name='alerts')
     speciality = models.ForeignKey(Speciality, on_delete=models.CASCADE, blank=True, null=True, related_name='alerts')
     level = models.ForeignKey(Level, on_delete=models.CASCADE, blank=True, null=True, related_name='alerts')
@@ -216,7 +218,7 @@ class Alert(models.Model):
 class AlertReadStatus(models.Model):
     """Suivi des alertes lues par utilisateur"""
     alert = models.ForeignKey(Alert, on_delete=models.CASCADE, related_name='read_statuses')
-    user_id = models.CharField(max_length=255, verbose_name="ID Firebase User")
+    user_id = models.CharField(max_length=255, verbose_name="ID Firebase User", db_index=True)
     is_read = models.BooleanField(default=False, verbose_name="Lue")
     read_at = models.DateTimeField(blank=True, null=True, verbose_name="Lu le")
     
@@ -237,7 +239,7 @@ class AlertReadStatus(models.Model):
 
 class UserProfile(models.Model):
     """Profil utilisateur étendu"""
-    user_id = models.CharField(max_length=255, unique=True, verbose_name="ID Firebase User")
+    user_id = models.CharField(max_length=255, unique=True, verbose_name="ID Firebase User", db_index=True)
     email = models.EmailField(verbose_name="Email")
     first_name = models.CharField(max_length=100, verbose_name="Prénom")
     last_name = models.CharField(max_length=100, verbose_name="Nom")
@@ -262,12 +264,11 @@ class UserProfile(models.Model):
         return f"{self.first_name} {self.last_name}".strip()
 
 
-# ================== MODÈLE AJOUTÉ ==================
 class UserUniversity(models.Model):
     """
     Lie les utilisateurs Firebase aux universités pour les notifications
     """
-    user_id = models.CharField(max_length=255, verbose_name="ID Firebase User")
+    user_id = models.CharField(max_length=255, verbose_name="ID Firebase User", db_index=True)
     university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='user_universities')
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Date de création")
 
