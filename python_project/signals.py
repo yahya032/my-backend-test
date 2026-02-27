@@ -9,20 +9,17 @@ DEFAULT_TEST_USERS = ['test123', 'user456', 'firebase_user_123']
 def get_users_for_university(university_id):
     """
     Récupère les utilisateurs associés à une université
-    Utilise d'abord UserUniversity si disponible, sinon retourne les utilisateurs par défaut
     """
     if not university_id:
         return DEFAULT_TEST_USERS
     
     try:
-        # Essayer de récupérer depuis UserUniversity
         users = UserUniversity.objects.filter(university_id=university_id)
         if users.exists():
-            return list(set([user.user_id for user in users]))  # set() élimine les doublons
+            return list(set([user.user_id for user in users]))
     except:
         pass
     
-    # Retourne les utilisateurs par défaut sans doublons
     return list(set(DEFAULT_TEST_USERS))
 
 @receiver(post_save, sender=University)
@@ -30,7 +27,6 @@ def alert_university_created(sender, instance, created, **kwargs):
     """Alerte quand une nouvelle université est créée"""
     if created:
         users_to_notify = get_users_for_university(instance.id)
-        
         for user_id in users_to_notify:
             Alert.objects.create(
                 user_id=user_id,
@@ -45,7 +41,6 @@ def alert_speciality_created(sender, instance, created, **kwargs):
     if created:
         university_name = instance.university.name if instance.university else "Université"
         users_to_notify = get_users_for_university(instance.university_id)
-        
         for user_id in users_to_notify:
             Alert.objects.create(
                 user_id=user_id,
@@ -59,7 +54,6 @@ def alert_level_created(sender, instance, created, **kwargs):
     """Alerte quand un nouveau niveau est créé"""
     if created:
         users_to_notify = list(set(DEFAULT_TEST_USERS))
-        
         for user_id in users_to_notify:
             Alert.objects.create(
                 user_id=user_id,
@@ -74,7 +68,6 @@ def alert_semester_created(sender, instance, created, **kwargs):
     if created:
         level_name = instance.level.name if instance.level else "Niveau"
         users_to_notify = list(set(DEFAULT_TEST_USERS))
-        
         for user_id in users_to_notify:
             Alert.objects.create(
                 user_id=user_id,
@@ -90,9 +83,12 @@ def alert_matiere_created(sender, instance, created, **kwargs):
         university_name = "Université"
         university_id = None
         
-        if instance.speciality and instance.speciality.university:
-            university_name = instance.speciality.university.name
-            university_id = instance.speciality.university.id
+        # Accès via la chaîne de relations : Matiere → semester → level → speciality → university
+        if (instance.semester and 
+            instance.semester.level and 
+            instance.semester.level.speciality):
+            university_name = instance.semester.level.speciality.university.name
+            university_id = instance.semester.level.speciality.university.id
         
         users_to_notify = get_users_for_university(university_id) if university_id else list(set(DEFAULT_TEST_USERS))
         
@@ -118,9 +114,12 @@ def alert_document_created(sender, instance, created, **kwargs):
         
         if instance.matiere:
             matiere_name = instance.matiere.name
-            if instance.matiere.speciality and instance.matiere.speciality.university:
-                university_name = instance.matiere.speciality.university.name
-                university_id = instance.matiere.speciality.university.id
+            # Accès via la chaîne de relations : Document → matiere → semester → level → speciality → university
+            if (instance.matiere.semester and 
+                instance.matiere.semester.level and 
+                instance.matiere.semester.level.speciality):
+                university_name = instance.matiere.semester.level.speciality.university.name
+                university_id = instance.matiere.semester.level.speciality.university.id
         
         users_to_notify = get_users_for_university(university_id) if university_id else list(set(DEFAULT_TEST_USERS))
         
