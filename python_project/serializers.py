@@ -1,4 +1,3 @@
-# serializers.py
 from rest_framework import serializers
 from .models import *
 
@@ -46,8 +45,11 @@ class DocumentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Document
-        fields = ['id', 'title', 'description', 'file', 'file_url', 'file_type', 
-                  'is_published', 'download_count', 'matiere', 'matiere_name', 'created_at']
+        fields = [
+            'id', 'title', 'description', 'file', 'file_url', 
+            'file_type', 'document_type',  # NOUVEAU CHAMP
+            'is_published', 'download_count', 'matiere', 'matiere_name', 'created_at', 'updated_at'
+        ]
     
     def get_file_url(self, obj):
         request = self.context.get('request')
@@ -77,6 +79,8 @@ class FavoriteDocumentSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='full_name', read_only=True)
+    
     class Meta:
         model = UserProfile
         fields = '__all__'

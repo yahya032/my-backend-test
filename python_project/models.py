@@ -119,11 +119,27 @@ class Document(models.Model):
         ('other', 'Autre'),
     ]
     
+    # Type de document pédagogique
+    DOCUMENT_TYPE_CHOICES = [
+        ('CM', 'Cours Magistral'),
+        ('TD', 'Travaux Dirigés'),
+        ('TP', 'Travaux Pratiques'),
+        ('EXAM', 'Examen'),
+        ('PROJET', 'Projet'),
+        ('AUTRE', 'Autre'),
+    ]
+    
     matiere = models.ForeignKey(Matiere, on_delete=models.CASCADE, related_name='documents')
     title = models.CharField(max_length=300, verbose_name="Titre du document")
     description = models.TextField(blank=True, null=True, verbose_name="Description")
     file = models.FileField(upload_to='documents/%Y/%m/%d/', verbose_name="Fichier")
-    file_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='pdf')
+    file_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='pdf', verbose_name="Type de fichier")
+    document_type = models.CharField(  # NOUVEAU CHAMP
+        max_length=10, 
+        choices=DOCUMENT_TYPE_CHOICES, 
+        default='CM',
+        verbose_name="Type de document"
+    )
     is_published = models.BooleanField(default=True, verbose_name="Publié")
     download_count = models.IntegerField(default=0, verbose_name="Nombre de téléchargements")
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Date de création")
@@ -136,6 +152,7 @@ class Document(models.Model):
         indexes = [
             models.Index(fields=['matiere', '-created_at']),
             models.Index(fields=['file_type']),
+            models.Index(fields=['document_type']),  # NOUVEL INDEX
             models.Index(fields=['is_published']),
         ]
     
@@ -153,6 +170,22 @@ class Document(models.Model):
                 'mp4': 'video', 'avi': 'video', 'mov': 'video',
             }
             self.file_type = type_map.get(ext, 'other')
+        
+        # NOUVEAU : Déterminer automatiquement le type de document à partir du titre
+        if self.title:
+            title_lower = self.title.lower()
+            if 'td' in title_lower or 't.d' in title_lower or 'td1' in title_lower or 'td2' in title_lower:
+                self.document_type = 'TD'
+            elif 'tp' in title_lower or 't.p' in title_lower or 'tp1' in title_lower or 'tp2' in title_lower:
+                self.document_type = 'TP'
+            elif 'examen' in title_lower or 'exam' in title_lower or 'ds' in title_lower or 'controle' in title_lower:
+                self.document_type = 'EXAM'
+            elif 'projet' in title_lower:
+                self.document_type = 'PROJET'
+            elif 'cours' in title_lower or 'cm' in title_lower or 'chapitre' in title_lower or 'chap' in title_lower:
+                self.document_type = 'CM'
+            # Sinon, garder la valeur par défaut (CM)
+        
         super().save(*args, **kwargs)
 
 
