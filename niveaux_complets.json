@@ -1,0 +1,302 @@
+[
+{
+  "model": "python_project.level",
+  "pk": 1,
+  "fields": {
+    "speciality": 3,
+    "name": "L1",
+    "code": "DRO_L1",
+    "description": "Niveau Licence 1 pour Droit",
+    "order": 1,
+    "created_at": "2026-02-28T00:19:31.348Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 2,
+  "fields": {
+    "speciality": 3,
+    "name": "L2",
+    "code": "DRO_L2",
+    "description": "Niveau Licence 2 pour Droit",
+    "order": 2,
+    "created_at": "2026-02-28T00:19:31.365Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 3,
+  "fields": {
+    "speciality": 3,
+    "name": "L3",
+    "code": "DRO_L3",
+    "description": "Niveau Licence 3 pour Droit",
+    "order": 3,
+    "created_at": "2026-02-28T00:19:31.380Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 4,
+  "fields": {
+    "speciality": 3,
+    "name": "M1",
+    "code": "DRO_M1",
+    "description": "Niveau Master 1 pour Droit",
+    "order": 4,
+    "created_at": "2026-02-28T00:19:31.396Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 5,
+  "fields": {
+    "speciality": 3,
+    "name": "M2",
+    "code": "DRO_M2",
+    "description": "Niveau Master 2 pour Droit",
+    "order": 5,
+    "created_at": "2026-02-28T00:19:31.410Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 6,
+  "fields": {
+    "speciality": 1,
+    "name": "L1",
+    "code": "INF_L1",
+    "description": "Niveau Licence 1 pour Informatique",
+    "order": 1,
+    "created_at": "2026-02-28T00:19:31.427Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 7,
+  "fields": {
+    "speciality": 1,
+    "name": "L2",
+    "code": "INF_L2",
+    "description": "Niveau Licence 2 pour Informatique",
+    "order": 2,
+    "created_at": "2026-02-28T00:19:31.442Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 8,
+  "fields": {
+    "speciality": 1,
+    "name": "L3",
+    "code": "INF_L3",
+    "description": "Niveau Licence 3 pour Informatique",
+    "order": 3,
+    "created_at": "2026-02-28T00:19:31.456Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 9,
+  "fields": {
+    "speciality": 1,
+    "name": "M1",
+    "code": "INF_M1",
+    "description": "Niveau Master 1 pour Informatique",
+    "order": 4,
+    "created_at": "2026-02-28T00:19:31.471Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 10,
+  "fields": {
+    "speciality": 1,
+    "name": "M2",
+    "code": "INF_M2",
+    "description": "Niveau Master 2 pour Informatique",
+    "order": 5,
+    "created_at": "2026-02-28T00:19:31.485Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 11,
+  "fields": {
+    "speciality": 5,
+    "name": "L1",
+    "code": "MAT_L1",
+    "description": "Niveau Licence 1 pour Mathématiques",
+    "order": 1,
+    "created_at": "2026-02-28T00:19:31.500Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 12,
+  "fields": {
+    "speciality": 5,
+    "name": "L2",
+    "code": "MAT_L2",
+    "description": "Niveau Licence 2 pour Mathématiques",
+    "order": 2,
+    "created_at": "2026-02-28T00:19:31.517Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 13,
+  "fields": {
+    "speciality": 5,
+    "name": "L3",
+    "code": "MAT_L3",
+    "description": "Niveau Licence 3 pour Mathématiques",
+    "order": 3,
+    "created_at": "2026-02-28T00:19:31.534Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 14,
+  "fields": {
+    "speciality": 5,
+    "name": "M1",
+    "code": "MAT_M1",
+    "description": "Niveau Master 1 pour Mathématiques",
+    "order": 4,
+    "created_at": "2026-02-28T00:19:31.551Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 15,
+  "fields": {
+    "speciality": 5,
+    "name": "M2",
+    "code": "MAT_M2",
+    "description": "Niveau Master 2 pour Mathématiques",
+    "order": 5,
+    "created_at": "2026-02-28T00:19:31.567Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 16,
+  "fields": {
+    "speciality": 2,
+    "name": "L1",
+    "code": "MÉD_L1",
+    "description": "Niveau Licence 1 pour Médecine",
+    "order": 1,
+    "created_at": "2026-02-28T00:19:31.584Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 17,
+  "fields": {
+    "speciality": 2,
+    "name": "L2",
+    "code": "MÉD_L2",
+    "description": "Niveau Licence 2 pour Médecine",
+    "order": 2,
+    "created_at": "2026-02-28T00:19:31.602Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 18,
+  "fields": {
+    "speciality": 2,
+    "name": "L3",
+    "code": "MÉD_L3",
+    "description": "Niveau Licence 3 pour Médecine",
+    "order": 3,
+    "created_at": "2026-02-28T00:19:31.617Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 19,
+  "fields": {
+    "speciality": 2,
+    "name": "M1",
+    "code": "MÉD_M1",
+    "description": "Niveau Master 1 pour Médecine",
+    "order": 4,
+    "created_at": "2026-02-28T00:19:31.632Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 20,
+  "fields": {
+    "speciality": 2,
+    "name": "M2",
+    "code": "MÉD_M2",
+    "description": "Niveau Master 2 pour Médecine",
+    "order": 5,
+    "created_at": "2026-02-28T00:19:31.647Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 21,
+  "fields": {
+    "speciality": 4,
+    "name": "L1",
+    "code": "ÉCO_L1",
+    "description": "Niveau Licence 1 pour Économie",
+    "order": 1,
+    "created_at": "2026-02-28T00:19:31.663Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 22,
+  "fields": {
+    "speciality": 4,
+    "name": "L2",
+    "code": "ÉCO_L2",
+    "description": "Niveau Licence 2 pour Économie",
+    "order": 2,
+    "created_at": "2026-02-28T00:19:31.679Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 23,
+  "fields": {
+    "speciality": 4,
+    "name": "L3",
+    "code": "ÉCO_L3",
+    "description": "Niveau Licence 3 pour Économie",
+    "order": 3,
+    "created_at": "2026-02-28T00:19:31.694Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 24,
+  "fields": {
+    "speciality": 4,
+    "name": "M1",
+    "code": "ÉCO_M1",
+    "description": "Niveau Master 1 pour Économie",
+    "order": 4,
+    "created_at": "2026-02-28T00:19:31.710Z"
+  }
+},
+{
+  "model": "python_project.level",
+  "pk": 25,
+  "fields": {
+    "speciality": 4,
+    "name": "M2",
+    "code": "ÉCO_M2",
+    "description": "Niveau Master 2 pour Économie",
+    "order": 5,
+    "created_at": "2026-02-28T00:19:31.726Z"
+  }
+}
+]
