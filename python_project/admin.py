@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from django.urls import reverse, path
 from django.db.models import Count
 from django.template.response import TemplateResponse
-from django.http import JsonResponse  # ← IMPORT MANQUANT AJOUTÉ
+from django.http import JsonResponse
 from .models import *
 
 # ================== CONFIGURATION GLOBALE PREMIUM ==================
@@ -89,8 +89,9 @@ class DashboardAdminSite(admin.AdminSite):
         }
         return TemplateResponse(request, 'admin/custom_dashboard.html', context)
 
-# Utiliser le site personnalisé
-# admin_site = DashboardAdminSite(name='myadmin')  # ← À UTILISER DANS URLS.PY
+# ================== SITE ADMIN PERSONNALISÉ ==================
+# DÉCOMMENTEZ CETTE LIGNE POUR ACTIVER LE DASHBOARD
+admin_site = DashboardAdminSite(name='myadmin')
 
 # ================== UNIVERSITÉS PREMIUM ==================
 @admin.register(University)

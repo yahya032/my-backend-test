@@ -4,16 +4,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-# IMPORTANT: Décommentez cette ligne si vous voulez utiliser l'admin personnalisé
-# from python_project.admin import admin_site
+from python_project.admin import admin_site  # ← IMPORT À AJOUTER
 
 urlpatterns = [
-    # Utilisez soit l'admin par défaut (déjà fonctionnel)
-    path('admin/', admin.site.urls),
-    
-    # OU décommentez ceci pour l'admin personnalisé avec dashboard
-    # path('admin/', admin_site.urls),
-    
+    # path('admin/', admin.site.urls),  # ← À COMMENTER
+    path('admin/', admin_site.urls),  # ← À DÉCOMMENTER
     path('api/', include('python_project.urls')),
 ]
 
