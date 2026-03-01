@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse, path
-from django.db.models import Count
+from django.db.models import Count, Sum  # ← AJOUTER Sum ICI
 from django.template.response import TemplateResponse
 from django.http import JsonResponse
+from django.utils import timezone  # ← AJOUTER CET IMPORT
 from .models import *
 
 # ================== CONFIGURATION GLOBALE PREMIUM ==================
@@ -74,6 +75,7 @@ class DashboardAdminSite(admin.AdminSite):
         """Vue du dashboard géant"""
         context = {
             'title': 'Dashboard Stratégique',
+            'now': timezone.now(),
             'stats': {
                 'universities': University.objects.count(),
                 'specialities': Speciality.objects.count(),
@@ -82,6 +84,11 @@ class DashboardAdminSite(admin.AdminSite):
                 'matieres': Matiere.objects.count(),
                 'documents': Document.objects.count(),
                 'users': UserProfile.objects.count(),
+                'alerts': Alert.objects.count(),
+                'alerts_unread': AlertReadStatus.objects.filter(is_read=False).count(),
+                'alerts_urgent': Alert.objects.filter(priority='urgent').count(),
+                'total_downloads': Document.objects.aggregate(total=Sum('download_count'))['total'] or 0,
+                'favorites': FavoriteDocument.objects.count(),
             },
             'recent_docs': Document.objects.order_by('-created_at')[:15],
             'popular_docs': Document.objects.order_by('-download_count')[:10],
@@ -90,7 +97,6 @@ class DashboardAdminSite(admin.AdminSite):
         return TemplateResponse(request, 'admin/custom_dashboard.html', context)
 
 # ================== SITE ADMIN PERSONNALISÉ ==================
-# DÉCOMMENTEZ CETTE LIGNE POUR ACTIVER LE DASHBOARD
 admin_site = DashboardAdminSite(name='myadmin')
 
 # ================== UNIVERSITÉS PREMIUM ==================

@@ -12,10 +12,21 @@
         --danger: #e74c3c;
         --light: #ecf0f1;
         --dark: #2c3e50;
+        
+        /* Couleurs pour chaque module */
+        --color-alerts: #e74c3c;
+        --color-documents: #3498db;
+        --color-universities: #9b59b6;
+        --color-specialities: #2ecc71;
+        --color-levels: #f39c12;
+        --color-semesters: #1abc9c;
+        --color-matieres: #e67e22;
+        --color-users: #95a5a6;
     }
     
     body {
         background: #f5f7fa;
+        font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
     }
     
     .dashboard-container {
@@ -24,21 +35,45 @@
         margin: 0 auto;
     }
     
+    /* En-tête du dashboard */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+    }
+    
+    .dashboard-date {
+        background: white;
+        padding: 10px 20px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        font-weight: 500;
+        color: var(--primary);
+    }
+    
     /* Cartes KPI Géantes */
     .kpi-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 25px;
         margin-bottom: 40px;
     }
     
     .kpi-card {
         background: white;
-        border-radius: 20px;
+        border-radius: 24px;
         padding: 25px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.03);
         position: relative;
         overflow: hidden;
     }
@@ -54,17 +89,59 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 5px;
+        height: 6px;
         background: linear-gradient(90deg, var(--accent), var(--success));
     }
     
-    .kpi-icon {
-        font-size: 3rem;
+    /* Couleurs spécifiques pour chaque carte */
+    .kpi-card.alerts::before { background: var(--color-alerts); }
+    .kpi-card.documents::before { background: var(--color-documents); }
+    .kpi-card.universities::before { background: var(--color-universities); }
+    .kpi-card.specialities::before { background: var(--color-specialities); }
+    .kpi-card.levels::before { background: var(--color-levels); }
+    .kpi-card.semesters::before { background: var(--color-semesters); }
+    .kpi-card.matieres::before { background: var(--color-matieres); }
+    .kpi-card.users::before { background: var(--color-users); }
+    
+    .kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 15px;
     }
     
+    .kpi-icon {
+        font-size: 2.5rem;
+        background: rgba(52, 152, 219, 0.1);
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 18px;
+    }
+    
+    /* Couleurs d'icônes */
+    .alerts .kpi-icon { background: rgba(231, 76, 60, 0.1); color: var(--color-alerts); }
+    .documents .kpi-icon { background: rgba(52, 152, 219, 0.1); color: var(--color-documents); }
+    .universities .kpi-icon { background: rgba(155, 89, 182, 0.1); color: var(--color-universities); }
+    .specialities .kpi-icon { background: rgba(46, 204, 113, 0.1); color: var(--color-specialities); }
+    .levels .kpi-icon { background: rgba(243, 156, 18, 0.1); color: var(--color-levels); }
+    .semesters .kpi-icon { background: rgba(26, 188, 156, 0.1); color: var(--color-semesters); }
+    .matieres .kpi-icon { background: rgba(230, 126, 34, 0.1); color: var(--color-matieres); }
+    .users .kpi-icon { background: rgba(149, 165, 166, 0.1); color: var(--color-users); }
+    
+    .kpi-badge {
+        background: var(--light);
+        padding: 5px 12px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
     .kpi-value {
-        font-size: 3rem;
+        font-size: 3.2rem;
         font-weight: 700;
         color: var(--dark);
         line-height: 1;
@@ -74,13 +151,105 @@
     .kpi-label {
         font-size: 1.1rem;
         color: #7f8c8d;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+    
+    .kpi-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid var(--light);
     }
     
     .kpi-trend {
-        margin-top: 15px;
         font-size: 0.9rem;
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .kpi-link {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .kpi-link:hover {
+        text-decoration: underline;
+    }
+    
+    /* Grille des modules */
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+    
+    .module-card {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.03);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    
+    .module-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+    
+    .module-content {
+        flex: 1;
+    }
+    
+    .module-name {
+        font-size: 0.9rem;
+        color: #95a5a6;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+    }
+    
+    .module-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+    
+    .module-count {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+    
+    .module-change {
+        font-size: 0.8rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        background: rgba(46, 204, 113, 0.1);
         color: var(--success);
     }
     
@@ -126,7 +295,7 @@
     .activity-item {
         display: flex;
         align-items: center;
-        padding: 15px 0;
+        padding: 12px 0;
         border-bottom: 1px solid var(--light);
     }
     
@@ -148,13 +317,30 @@
     .activity-title {
         font-weight: 600;
         color: var(--dark);
-        margin-bottom: 5px;
+        margin-bottom: 3px;
     }
     
     .activity-meta {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: #95a5a6;
+        display: flex;
+        gap: 15px;
     }
+    
+    .activity-badge {
+        padding: 3px 10px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: white;
+    }
+    
+    /* Badges de type */
+    .badge-cm { background: #3498db; }
+    .badge-td { background: #2ecc71; }
+    .badge-tp { background: #e74c3c; }
+    .badge-exam { background: #f39c12; }
+    .badge-projet { background: #9b59b6; }
     
     /* Boutons d'action rapide */
     .quick-actions {
@@ -168,29 +354,53 @@
         background: white;
         border: none;
         padding: 15px 25px;
-        border-radius: 12px;
+        border-radius: 14px;
         font-size: 1rem;
         font-weight: 500;
         color: var(--dark);
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.03);
     }
     
     .quick-action-btn:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px);
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         background: var(--accent);
         color: white;
     }
+    
+    /* Couleurs des badges de document */
+    .document-type-badge {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .type-CM { background: #3498db; }
+    .type-TD { background: #2ecc71; }
+    .type-TP { background: #e74c3c; }
+    .type-EXAM { background: #f39c12; }
+    .type-PROJET { background: #9b59b6; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
+    
+    <!-- En-tête -->
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">📊 Tableau de Bord SupNum</h1>
+        <div class="dashboard-date">
+            {{ now|date:"l d F Y" }}
+        </div>
+    </div>
     
     <!-- Actions Rapides -->
     <div class="quick-actions">
@@ -208,41 +418,118 @@
         </button>
     </div>
     
-    <!-- KPI Cards Géants -->
+    <!-- KPI Cards Géantes avec Couleurs -->
     <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-icon">🏛️</div>
-            <div class="kpi-value">{{ stats.universities }}</div>
-            <div class="kpi-label">Universités</div>
-            <div class="kpi-trend">+2 cette année</div>
+        <!-- Alertes -->
+        <div class="kpi-card alerts">
+            <div class="kpi-header">
+                <div class="kpi-icon">🔔</div>
+                <span class="kpi-badge">{{ stats.alerts_unread }} non lues</span>
+            </div>
+            <div class="kpi-value">{{ stats.alerts }}</div>
+            <div class="kpi-label">Alertes</div>
+            <div class="kpi-footer">
+                <span class="kpi-trend">⚠️ {{ stats.alerts_urgent }} urgentes</span>
+                <a href="/admin/python_project/alert/" class="kpi-link">Voir →</a>
+            </div>
         </div>
         
-        <div class="kpi-card">
-            <div class="kpi-icon">🎓</div>
-            <div class="kpi-value">{{ stats.specialities }}</div>
-            <div class="kpi-label">Spécialités</div>
-            <div class="kpi-trend">{{ stats.levels }} niveaux</div>
-        </div>
-        
-        <div class="kpi-card">
-            <div class="kpi-icon">📚</div>
-            <div class="kpi-value">{{ stats.matieres }}</div>
-            <div class="kpi-label">Matières</div>
-            <div class="kpi-trend">{{ stats.semesters }} semestres</div>
-        </div>
-        
-        <div class="kpi-card">
-            <div class="kpi-icon">📄</div>
+        <!-- Documents -->
+        <div class="kpi-card documents">
+            <div class="kpi-header">
+                <div class="kpi-icon">📄</div>
+                <span class="kpi-badge">+{{ recent_docs|length }} récents</span>
+            </div>
             <div class="kpi-value">{{ stats.documents }}</div>
             <div class="kpi-label">Documents</div>
-            <div class="kpi-trend">+{{ recent_docs|length }} récents</div>
+            <div class="kpi-footer">
+                <span class="kpi-trend">📥 {{ stats.total_downloads }} téléchargements</span>
+                <a href="/admin/python_project/document/" class="kpi-link">Voir →</a>
+            </div>
         </div>
         
-        <div class="kpi-card">
-            <div class="kpi-icon">👥</div>
+        <!-- Universités -->
+        <div class="kpi-card universities">
+            <div class="kpi-header">
+                <div class="kpi-icon">🏛️</div>
+                <span class="kpi-badge">Actives</span>
+            </div>
+            <div class="kpi-value">{{ stats.universities }}</div>
+            <div class="kpi-label">Universités</div>
+            <div class="kpi-footer">
+                <span class="kpi-trend">🎓 {{ stats.specialities }} spécialités</span>
+                <a href="/admin/python_project/university/" class="kpi-link">Voir →</a>
+            </div>
+        </div>
+        
+        <!-- Spécialités -->
+        <div class="kpi-card specialities">
+            <div class="kpi-header">
+                <div class="kpi-icon">🎓</div>
+                <span class="kpi-badge">{{ stats.levels }} niveaux</span>
+            </div>
+            <div class="kpi-value">{{ stats.specialities }}</div>
+            <div class="kpi-label">Spécialités</div>
+            <div class="kpi-footer">
+                <span class="kpi-trend">📚 {{ stats.matieres }} matières</span>
+                <a href="/admin/python_project/speciality/" class="kpi-link">Voir →</a>
+            </div>
+        </div>
+        
+        <!-- Niveaux -->
+        <div class="kpi-card levels">
+            <div class="kpi-header">
+                <div class="kpi-icon">📖</div>
+                <span class="kpi-badge">L1 à M2</span>
+            </div>
+            <div class="kpi-value">{{ stats.levels }}</div>
+            <div class="kpi-label">Niveaux</div>
+            <div class="kpi-footer">
+                <span class="kpi-trend">📅 {{ stats.semesters }} semestres</span>
+                <a href="/admin/python_project/level/" class="kpi-link">Voir →</a>
+            </div>
+        </div>
+        
+        <!-- Semestres -->
+        <div class="kpi-card semesters">
+            <div class="kpi-header">
+                <div class="kpi-icon">📅</div>
+                <span class="kpi-badge">S1-S2</span>
+            </div>
+            <div class="kpi-value">{{ stats.semesters }}</div>
+            <div class="kpi-label">Semestres</div>
+            <div class="kpi-footer">
+                <span class="kpi-trend">📚 {{ stats.matieres }} matières</span>
+                <a href="/admin/python_project/semester/" class="kpi-link">Voir →</a>
+            </div>
+        </div>
+        
+        <!-- Matières -->
+        <div class="kpi-card matieres">
+            <div class="kpi-header">
+                <div class="kpi-icon">📚</div>
+                <span class="kpi-badge">{{ stats.matieres }} total</span>
+            </div>
+            <div class="kpi-value">{{ stats.matieres }}</div>
+            <div class="kpi-label">Matières</div>
+            <div class="kpi-footer">
+                <span class="kpi-trend">📄 {{ stats.documents }} docs</span>
+                <a href="/admin/python_project/matiere/" class="kpi-link">Voir →</a>
+            </div>
+        </div>
+        
+        <!-- Utilisateurs -->
+        <div class="kpi-card users">
+            <div class="kpi-header">
+                <div class="kpi-icon">👥</div>
+                <span class="kpi-badge">Actifs</span>
+            </div>
             <div class="kpi-value">{{ stats.users }}</div>
             <div class="kpi-label">Utilisateurs</div>
-            <div class="kpi-trend">Actifs aujourd'hui</div>
+            <div class="kpi-footer">
+                <span class="kpi-trend">⭐ {{ stats.favorites }} favoris</span>
+                <a href="/admin/python_project/userprofile/" class="kpi-link">Voir →</a>
+            </div>
         </div>
     </div>
     
@@ -250,16 +537,16 @@
     <div class="charts-grid">
         <div class="chart-card">
             <div class="chart-title">
-                <span>📊</span> Distribution des Documents
+                <span>📊</span> Distribution des Documents par Type
             </div>
-            <canvas id="documentsChart" style="width:100%; height:300px;"></canvas>
+            <canvas id="documentsChart" style="width:100%; height:280px;"></canvas>
         </div>
         
         <div class="chart-card">
             <div class="chart-title">
-                <span>📈</span> Niveaux par Spécialité
+                <span>📈</span> Répartition des Niveaux
             </div>
-            <canvas id="levelsChart" style="width:100%; height:300px;"></canvas>
+            <canvas id="levelsChart" style="width:100%; height:280px;"></canvas>
         </div>
     </div>
     
@@ -271,15 +558,25 @@
             </div>
             {% for doc in recent_docs %}
             <div class="activity-item">
-                <div class="activity-dot" style="background: #3498db;"></div>
+                <div class="activity-dot" style="background: 
+                    {% if doc.document_type == 'CM' %}#3498db
+                    {% elif doc.document_type == 'TD' %}#2ecc71
+                    {% elif doc.document_type == 'TP' %}#e74c3c
+                    {% elif doc.document_type == 'EXAM' %}#f39c12
+                    {% elif doc.document_type == 'PROJET' %}#9b59b6
+                    {% else %}#95a5a6{% endif %};">
+                </div>
                 <div class="activity-content">
-                    <div class="activity-title">{{ doc.title }}</div>
+                    <div class="activity-title">{{ doc.title|truncatechars:40 }}</div>
                     <div class="activity-meta">
-                        {{ doc.matiere.name }} • {{ doc.created_at|timesince }}
+                        <span>{{ doc.matiere.name|truncatechars:20 }}</span>
+                        <span>⬇️ {{ doc.download_count }}</span>
                     </div>
                 </div>
-                <span class="badge">{{ doc.download_count }} ⬇️</span>
+                <span class="activity-badge type-{{ doc.document_type }}">{{ doc.document_type }}</span>
             </div>
+            {% empty %}
+            <p>Aucun document récent</p>
             {% endfor %}
         </div>
         
@@ -307,12 +604,23 @@
         </div>
         {% for alert in alerts %}
         <div class="activity-item">
-            <div class="activity-dot" style="background: #f39c12;"></div>
+            <div class="activity-dot" style="background: 
+                {% if alert.priority == 'urgent' %}#e74c3c
+                {% elif alert.priority == 'high' %}#f39c12
+                {% elif alert.priority == 'medium' %}#3498db
+                {% else %}#95a5a6{% endif %};">
+            </div>
             <div class="activity-content">
                 <div class="activity-title">{{ alert.title }}</div>
                 <div class="activity-meta">{{ alert.message|truncatechars:50 }}</div>
             </div>
-            <span class="badge">{{ alert.get_priority_display }}</span>
+            <span class="badge" style="background: 
+                {% if alert.priority == 'urgent' %}#e74c3c
+                {% elif alert.priority == 'high' %}#f39c12
+                {% elif alert.priority == 'medium' %}#3498db
+                {% else %}#95a5a6{% endif %}; color: white; padding: 3px 10px; border-radius: 30px;">
+                {{ alert.get_priority_display }}
+            </span>
         </div>
         {% empty %}
         <p>Aucune alerte active</p>
@@ -326,37 +634,52 @@
 fetch('/admin/api/stats/')
     .then(response => response.json())
     .then(data => {
-        // Graphique des documents
+        // Graphique des documents avec couleurs
         new Chart(document.getElementById('documentsChart'), {
             type: 'doughnut',
             data: {
-                labels: ['CM', 'TD', 'TP', 'Examens', 'Projets'],
+                labels: ['CM', 'TD', 'TP', 'Examens', 'Projets', 'Autres'],
                 datasets: [{
                     data: [
                         data.documents_by_type.CM || 0,
                         data.documents_by_type.TD || 0,
                         data.documents_by_type.TP || 0,
                         data.documents_by_type.EXAM || 0,
-                        data.documents_by_type.PROJET || 0
+                        data.documents_by_type.PROJET || 0,
+                        data.documents_by_type.AUTRE || 0
                     ],
                     backgroundColor: [
-                        '#3498db',
-                        '#2ecc71',
-                        '#e74c3c',
-                        '#f39c12',
-                        '#9b59b6'
-                    ]
+                        '#3498db', // CM
+                        '#2ecc71', // TD
+                        '#e74c3c', // TP
+                        '#f39c12', // EXAM
+                        '#9b59b6', // PROJET
+                        '#95a5a6'  // AUTRE
+                    ],
+                    borderWidth: 0,
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: 'bottom' }
-                }
+                    legend: { 
+                        position: 'bottom',
+                        labels: { usePointStyle: true, padding: 20 }
+                    }
+                },
+                cutout: '60%',
             }
         });
         
-        // Graphique des niveaux
+        // Graphique des niveaux avec couleurs
+        const levelColors = {
+            'L1': '#3498db',
+            'L2': '#2ecc71', 
+            'L3': '#f39c12',
+            'M1': '#e74c3c',
+            'M2': '#9b59b6'
+        };
+        
         new Chart(document.getElementById('levelsChart'), {
             type: 'bar',
             data: {
@@ -364,13 +687,21 @@ fetch('/admin/api/stats/')
                 datasets: [{
                     label: 'Nombre de spécialités',
                     data: Object.values(data.levels_distribution),
-                    backgroundColor: '#3498db'
+                    backgroundColor: Object.keys(data.levels_distribution).map(l => levelColors[l] || '#95a5a6'),
+                    borderRadius: 8,
                 }]
             },
             options: {
                 responsive: true,
                 scales: {
-                    y: { beginAtZero: true }
+                    y: { 
+                        beginAtZero: true,
+                        grid: { display: false }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false }
                 }
             }
         });
