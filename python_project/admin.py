@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse, path
-from django.db.models import Count, Sum  # ← AJOUTER Sum ICI
+from django.db.models import Count, Sum
 from django.template.response import TemplateResponse
 from django.http import JsonResponse
-from django.utils import timezone  # ← AJOUTER CET IMPORT
+from django.utils import timezone
 from .models import *
 
 # ================== CONFIGURATION GLOBALE PREMIUM ==================
@@ -104,12 +104,12 @@ admin_site = DashboardAdminSite(name='myadmin')
 class UniversityAdmin(admin.ModelAdmin):
     list_display = [
         'display_avatar', 
-        'colored_name', 
+        'colored_name_link',  # ← MODIFIÉ : avec lien
         'stats_cards', 
         'progress_bar',
         'last_activity'
     ]
-    list_display_links = ['colored_name']
+    list_display_links = ['colored_name_link']  # ← Ajout du lien
     search_fields = ['name']
     list_filter = ['created_at']
     list_per_page = 10
@@ -140,13 +140,15 @@ class UniversityAdmin(admin.ModelAdmin):
         return format_html('<div style="width:50px;height:50px;border-radius:12px;background:#ecf0f1;display:flex;align-items:center;justify-content:center;">🏛️</div>')
     display_avatar.short_description = ''
     
-    def colored_name(self, obj):
+    def colored_name_link(self, obj):  # ← NOUVELLE méthode avec lien
         return format_html(
-            '<span style="font-weight: bold; font-size: 1.1rem; color: #2c3e50;">{}</span><br>'
+            '<a href="{}" style="font-weight: bold; font-size: 1.1rem; color: #2c3e50; text-decoration: none;">{}</a><br>'
             '<small style="color: #7f8c8d;">Créé le {}</small>',
-            obj.name, obj.created_at.strftime('%d/%m/%Y')
+            reverse('admin:python_project_university_change', args=[obj.id]),
+            obj.name, 
+            obj.created_at.strftime('%d/%m/%Y')
         )
-    colored_name.short_description = 'Université'
+    colored_name_link.short_description = 'Université'
     
     def stats_cards(self, obj):
         specialities = obj.specialities.count()
@@ -175,7 +177,7 @@ class UniversityAdmin(admin.ModelAdmin):
         total_docs = Document.objects.filter(
             matiere__semester__level__speciality__university=obj
         ).count()
-        max_docs = 100  # Objectif
+        max_docs = 100
         percentage = min(int((total_docs / max_docs) * 100), 100)
         
         color = '#27ae60' if percentage > 70 else '#f39c12' if percentage > 30 else '#e74c3c'
@@ -212,13 +214,13 @@ class UniversityAdmin(admin.ModelAdmin):
 class DocumentAdmin(admin.ModelAdmin):
     list_display = [
         'preview_icon',
-        'colored_title',
+        'colored_title_link',  # ← MODIFIÉ : avec lien
         'document_badge',
         'file_badge',
         'stats_display',
         'actions_buttons'
     ]
-    list_display_links = ['colored_title']
+    list_display_links = ['colored_title_link']  # ← Ajout du lien
     list_filter = ['document_type', 'file_type', 'is_published', 'created_at']
     search_fields = ['title', 'description']
     list_per_page = 20
@@ -261,14 +263,15 @@ class DocumentAdmin(admin.ModelAdmin):
         )
     preview_icon.short_description = ''
     
-    def colored_title(self, obj):
+    def colored_title_link(self, obj):  # ← NOUVELLE méthode avec lien
         return format_html(
-            '<span style="font-weight: bold; color: #2c3e50;">{}</span><br>'
+            '<a href="{}" style="font-weight: bold; color: #2c3e50; text-decoration: none;">{}</a><br>'
             '<small style="color: #7f8c8d;">{}</small>',
+            reverse('admin:python_project_document_change', args=[obj.id]),
             obj.title[:50] + ('...' if len(obj.title) > 50 else ''),
             obj.matiere.name[:30]
         )
-    colored_title.short_description = 'Titre'
+    colored_title_link.short_description = 'Titre'
     
     def document_badge(self, obj):
         badges = {
@@ -327,44 +330,89 @@ class DocumentAdmin(admin.ModelAdmin):
 # ================== AUTRES MODÈLES ==================
 @admin.register(Speciality)
 class SpecialityAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'university', 'code']
+    list_display = ['id', 'name_link', 'university', 'code']  # ← MODIFIÉ
+    list_display_links = ['name_link']
     list_filter = ['university']
     search_fields = ['name', 'code']
+    
+    def name_link(self, obj):
+        return format_html('<a href="{}">{}</a>', reverse('admin:python_project_speciality_change', args=[obj.id]), obj.name)
+    name_link.short_description = 'Nom'
 
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'speciality', 'order']
+    list_display = ['id', 'display_name_link', 'speciality', 'order']  # ← MODIFIÉ
+    list_display_links = ['display_name_link']
     list_filter = ['speciality__university', 'name']
     search_fields = ['speciality__name']
+    
+    def display_name_link(self, obj):
+        return format_html('<a href="{}">{}</a>', reverse('admin:python_project_level_change', args=[obj.id]), obj.get_name_display())
+    display_name_link.short_description = 'Niveau'
 
 @admin.register(Semester)
 class SemesterAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'code', 'level', 'order']
+    list_display = ['id', 'name_link', 'code', 'level', 'order']  # ← MODIFIÉ
+    list_display_links = ['name_link']
     list_filter = ['level__speciality__university']
+    
+    def name_link(self, obj):
+        return format_html('<a href="{}">{}</a>', reverse('admin:python_project_semester_change', args=[obj.id]), obj.name)
+    name_link.short_description = 'Nom'
 
 @admin.register(Matiere)
 class MatiereAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'semester', 'credits', 'coefficient']
+    list_display = ['id', 'name_link', 'semester', 'credits', 'coefficient']  # ← MODIFIÉ
+    list_display_links = ['name_link']
     list_filter = ['semester__level__speciality__university']
+    
+    def name_link(self, obj):
+        return format_html('<a href="{}">{}</a>', reverse('admin:python_project_matiere_change', args=[obj.id]), obj.name)
+    name_link.short_description = 'Nom'
 
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'priority', 'is_global', 'created_at']
+    list_display = ['id', 'title_link', 'priority', 'is_global', 'created_at']  # ← MODIFIÉ
+    list_display_links = ['title_link']
     list_filter = ['priority', 'is_global']
+    
+    def title_link(self, obj):
+        return format_html('<a href="{}">{}</a>', reverse('admin:python_project_alert_change', args=[obj.id]), obj.title)
+    title_link.short_description = 'Titre'
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user_id', 'email', 'first_name', 'last_name', 'university']
+    list_display = ['user_id', 'email_link', 'first_name', 'last_name', 'university']  # ← MODIFIÉ
+    list_display_links = ['email_link']
     search_fields = ['email', 'first_name', 'last_name']
+    
+    def email_link(self, obj):
+        return format_html('<a href="{}">{}</a>', reverse('admin:python_project_userprofile_change', args=[obj.id]), obj.email)
+    email_link.short_description = 'Email'
 
 @admin.register(FavoriteDocument)
 class FavoriteDocumentAdmin(admin.ModelAdmin):
-    list_display = ['user_id', 'document', 'created_at']
+    list_display = ['id', 'user_link', 'document', 'created_at']  # ← MODIFIÉ
+    list_display_links = ['user_link']
+    
+    def user_link(self, obj):
+        return format_html('<a href="{}">{}</a>', reverse('admin:python_project_favoritedocument_change', args=[obj.id]), obj.user_id[:20])
+    user_link.short_description = 'User ID'
 
 @admin.register(AlertReadStatus)
 class AlertReadStatusAdmin(admin.ModelAdmin):
-    list_display = ['alert', 'user_id', 'is_read', 'read_at']
+    list_display = ['id', 'alert_link', 'user_id', 'is_read', 'read_at']  # ← MODIFIÉ
+    list_display_links = ['alert_link']
+    
+    def alert_link(self, obj):
+        return format_html('<a href="{}">Alerte #{}</a>', reverse('admin:python_project_alertreadstatus_change', args=[obj.id]), obj.alert.id)
+    alert_link.short_description = 'Alerte'
 
 @admin.register(UserUniversity)
 class UserUniversityAdmin(admin.ModelAdmin):
-    list_display = ['user_id', 'university', 'created_at']
+    list_display = ['id', 'user_link', 'university', 'created_at']  # ← MODIFIÉ
+    list_display_links = ['user_link']
+    
+    def user_link(self, obj):
+        return format_html('<a href="{}">{}</a>', reverse('admin:python_project_useruniversity_change', args=[obj.id]), obj.user_id[:20])
+    user_link.short_description = 'User ID'
