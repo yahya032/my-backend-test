@@ -2,11 +2,11 @@ from django.db import models
 from django.utils import timezone
 
 class University(models.Model):
-    """Modèle pour les universités"""
+    """Université - Niveau racine de la hiérarchie"""
     name = models.CharField(max_length=200, verbose_name="Nom de l'université")
+    description = models.TextField(blank=True, null=True, verbose_name="Description")
     logo_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="Logo URL")
     calendar_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="Calendrier URL")
-    description = models.TextField(blank=True, null=True, verbose_name="Description")
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Date de création")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière mise à jour")
     
@@ -21,7 +21,7 @@ class University(models.Model):
 
 
 class Speciality(models.Model):
-    """Modèle pour les spécialités"""
+    """Spécialité - Liée à une université"""
     university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='specialities')
     name = models.CharField(max_length=200, verbose_name="Nom de la spécialité")
     code = models.CharField(max_length=50, blank=True, null=True, verbose_name="Code")
@@ -41,7 +41,7 @@ class Speciality(models.Model):
 
 
 class Level(models.Model):
-    """Modèle pour les niveaux (L1, L2, L3, M1, M2)"""
+    """Niveau (L1, L2, M1, etc.) - Lié à une spécialité"""
     LEVEL_CHOICES = [
         ('L1', 'Licence 1'),
         ('L2', 'Licence 2'),
@@ -69,9 +69,10 @@ class Level(models.Model):
 
 
 class Semester(models.Model):
-    """Modèle pour les semestres"""
+    """Semestre (S1, S2, etc.) - Lié à un niveau"""
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='semesters')
     name = models.CharField(max_length=100, verbose_name="Nom du semestre")
+    description = models.TextField(blank=True, null=True, verbose_name="Description")  # ✅ AJOUTÉ
     code = models.CharField(max_length=20, verbose_name="Code (S1, S2, etc.)")
     order = models.IntegerField(default=0, verbose_name="Ordre")
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Date de création")
@@ -88,7 +89,7 @@ class Semester(models.Model):
 
 
 class Matiere(models.Model):
-    """Modèle pour les matières"""
+    """Matière - Liée à un semestre"""
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='matieres')
     name = models.CharField(max_length=200, verbose_name="Nom de la matière")
     code = models.CharField(max_length=50, blank=True, null=True, verbose_name="Code")
@@ -110,7 +111,7 @@ class Matiere(models.Model):
 
 
 class Document(models.Model):
-    """Modèle pour les documents (PDF, PPT, etc.)"""
+    """Document - Lié à une matière"""
     TYPE_CHOICES = [
         ('pdf', 'PDF'),
         ('ppt', 'PowerPoint'),
@@ -119,7 +120,6 @@ class Document(models.Model):
         ('other', 'Autre'),
     ]
     
-    # Type de document pédagogique
     DOCUMENT_TYPE_CHOICES = [
         ('CM', 'Cours Magistral'),
         ('TD', 'Travaux Dirigés'),
@@ -134,7 +134,7 @@ class Document(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name="Description")
     file = models.FileField(upload_to='documents/%Y/%m/%d/', verbose_name="Fichier")
     file_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='pdf', verbose_name="Type de fichier")
-    document_type = models.CharField(  # NOUVEAU CHAMP
+    document_type = models.CharField(
         max_length=10, 
         choices=DOCUMENT_TYPE_CHOICES, 
         default='CM',
@@ -152,7 +152,7 @@ class Document(models.Model):
         indexes = [
             models.Index(fields=['matiere', '-created_at']),
             models.Index(fields=['file_type']),
-            models.Index(fields=['document_type']),  # NOUVEL INDEX
+            models.Index(fields=['document_type']),
             models.Index(fields=['is_published']),
         ]
     
@@ -171,26 +171,25 @@ class Document(models.Model):
             }
             self.file_type = type_map.get(ext, 'other')
         
-        # NOUVEAU : Déterminer automatiquement le type de document à partir du titre
+        # Déterminer automatiquement le type de document à partir du titre
         if self.title:
             title_lower = self.title.lower()
-            if 'td' in title_lower or 't.d' in title_lower or 'td1' in title_lower or 'td2' in title_lower:
+            if 'td' in title_lower or 't.d' in title_lower:
                 self.document_type = 'TD'
-            elif 'tp' in title_lower or 't.p' in title_lower or 'tp1' in title_lower or 'tp2' in title_lower:
+            elif 'tp' in title_lower or 't.p' in title_lower:
                 self.document_type = 'TP'
-            elif 'examen' in title_lower or 'exam' in title_lower or 'ds' in title_lower or 'controle' in title_lower:
+            elif 'examen' in title_lower or 'exam' in title_lower or 'ds' in title_lower:
                 self.document_type = 'EXAM'
             elif 'projet' in title_lower:
                 self.document_type = 'PROJET'
-            elif 'cours' in title_lower or 'cm' in title_lower or 'chapitre' in title_lower or 'chap' in title_lower:
+            elif 'cours' in title_lower or 'cm' in title_lower or 'chapitre' in title_lower:
                 self.document_type = 'CM'
-            # Sinon, garder la valeur par défaut (CM)
         
         super().save(*args, **kwargs)
 
 
 class FavoriteDocument(models.Model):
-    """Modèle pour les documents favoris des utilisateurs"""
+    """Documents favoris des utilisateurs"""
     user_id = models.CharField(max_length=255, verbose_name="ID Firebase User", db_index=True)
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='favorites')
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Date de création")
@@ -208,7 +207,7 @@ class FavoriteDocument(models.Model):
 
 
 class Alert(models.Model):
-    """Modèle pour les alertes/notifications"""
+    """Alertes/Notifications"""
     PRIORITY_CHOICES = [
         ('low', 'Basse'),
         ('medium', 'Moyenne'),
@@ -249,7 +248,7 @@ class Alert(models.Model):
 
 
 class AlertReadStatus(models.Model):
-    """Suivi des alertes lues par utilisateur"""
+    """Suivi des alertes lues"""
     alert = models.ForeignKey(Alert, on_delete=models.CASCADE, related_name='read_statuses')
     user_id = models.CharField(max_length=255, verbose_name="ID Firebase User", db_index=True)
     is_read = models.BooleanField(default=False, verbose_name="Lue")
@@ -298,9 +297,7 @@ class UserProfile(models.Model):
 
 
 class UserUniversity(models.Model):
-    """
-    Lie les utilisateurs Firebase aux universités pour les notifications
-    """
+    """Lie les utilisateurs Firebase aux universités"""
     user_id = models.CharField(max_length=255, verbose_name="ID Firebase User", db_index=True)
     university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='user_universities')
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Date de création")
