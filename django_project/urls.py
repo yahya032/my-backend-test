@@ -4,11 +4,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-from python_project.admin import admin_site  # ← IMPORT À AJOUTER
-
 urlpatterns = [
-    # path('admin/', admin.site.urls),  # ← À COMMENTER
-    path('admin/', admin_site.urls),  # ← À DÉCOMMENTER
+    path('admin/', admin.site.urls),  # ← ADMIN STANDARD (plus de dashboard personnalisé)
     path('api/', include('python_project.urls')),
 ]
 
